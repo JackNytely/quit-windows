@@ -34,6 +34,7 @@ export type DistroId =
   | "pop_os"
   | "bazzite"
   | "arch"
+  | "cachyos"
   | "opensuse_tumbleweed"
   | "debian";
 

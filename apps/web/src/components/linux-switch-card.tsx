@@ -29,7 +29,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DISTRO_OPTIONS, type DistroKey } from "@/lib/distros";
-import { getOrCreateDeviceId, isDesktopLinuxUserAgent } from "@/lib/platform";
+import {
+  detectLinuxDistroFromNavigator,
+  getOrCreateDeviceId,
+  isDesktopLinuxUserAgent,
+} from "@/lib/platform";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
 export function LinuxSwitchCard() {
@@ -41,10 +45,28 @@ export function LinuxSwitchCard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setIsLinux(isDesktopLinuxUserAgent(navigator.userAgent));
-    setDeviceId(getOrCreateDeviceId());
+  const tryDetectDistro = useCallback(() => {
+    const detected = detectLinuxDistroFromNavigator({
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      oscpu: (navigator as Navigator & { oscpu?: string }).oscpu,
+    });
+    if (detected) {
+      setDistro(detected as DistroKey);
+    }
   }, []);
+
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    setIsLinux(isDesktopLinuxUserAgent(ua));
+    setDeviceId(getOrCreateDeviceId());
+    tryDetectDistro();
+  }, [tryDetectDistro]);
+
+  useEffect(() => {
+    if (!open) return;
+    tryDetectDistro();
+  }, [open, tryDetectDistro]);
 
   const refreshStatus = useCallback(async () => {
     const id = getOrCreateDeviceId();
@@ -129,8 +151,8 @@ export function LinuxSwitchCard() {
               <DialogHeader>
                 <DialogTitle>Confirm your distro</DialogTitle>
                 <DialogDescription>
-                  We cannot read /etc/os-release from the browser—pick the
-                  closest match.
+                  We auto-detect from browser signals when possible. If it is
+                  wrong, pick the correct distro below.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-2 py-2">

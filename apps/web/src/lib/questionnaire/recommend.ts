@@ -72,6 +72,15 @@ const DISTROS: Record<
     stability: 4,
     latest: 10,
   },
+  cachyos: {
+    title: "CachyOS",
+    blurb:
+      "Arch-based and performance-focused, with tuned kernels and gaming-friendly defaults. Great when you want very fresh packages and strong performance without as much manual setup as vanilla Arch.",
+    gaming: 10,
+    easy: 6,
+    stability: 5,
+    latest: 10,
+  },
   opensuse_tumbleweed: {
     title: "openSUSE Tumbleweed",
     blurb:
@@ -129,6 +138,7 @@ export function recommend(
     pop_os: 0,
     bazzite: 0,
     arch: 0,
+    cachyos: 0,
     opensuse_tumbleweed: 0,
     debian: 0,
   };

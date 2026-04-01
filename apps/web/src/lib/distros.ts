@@ -5,6 +5,7 @@ export const DISTRO_OPTIONS = [
   { key: "fedora", label: "Fedora" },
   { key: "nobara", label: "Nobara Linux" },
   { key: "bazzite", label: "Bazzite (Steam-first)" },
+  { key: "cachyos", label: "CachyOS" },
   { key: "opensuse_tumbleweed", label: "openSUSE Tumbleweed" },
   { key: "debian", label: "Debian" },
   { key: "arch", label: "Arch Linux" },

@@ -25,9 +25,44 @@ import { distroLabel } from "@/lib/distros";
 import Link from "next/link";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Copy, Sparkles } from "lucide-react";
 
 const STEPS = 4;
+
+function buildGeminiPrompt(
+  answers: QuestionnaireAnswers,
+  recommendedDistro: string,
+): string {
+  const priorities = answers.priorities.length
+    ? answers.priorities.join(", ")
+    : "not specified";
+
+  const softwareLabels = answers.softwareIds
+    .map((id) => SOFTWARE_CATALOG.find((s) => s.id === id)?.label ?? id)
+    .join(", ");
+
+  return `I am switching from Windows to Linux.
+My recommended distro is: ${recommendedDistro}
+
+Please create a practical, step-by-step migration guide specifically for me.
+
+My profile:
+- Experience level: ${answers.experience}
+- Priorities: ${priorities}
+- Software I rely on: ${softwareLabels || "none listed"}
+
+Please include:
+1) A safe pre-install checklist (backup, BIOS/UEFI, Secure Boot, partition plan).
+2) Exact USB installer creation steps from Windows.
+3) Dual-boot path and full-replace path, and how to choose.
+4) Installation walkthrough for ${recommendedDistro} with recommended defaults.
+5) Post-install setup: updates, drivers (NVIDIA/AMD/Wi-Fi), codecs, gaming setup, and core apps.
+6) Mapping of my required software to native Linux apps / alternatives / workarounds.
+7) Common troubleshooting for boot issues, Wi-Fi, audio, GPU, and game anti-cheat limits.
+8) A first-week checklist and maintenance cadence.
+
+Keep commands accurate, explain each risky step, and ask me clarifying questions before assumptions.`;
+}
 
 export function SwitchQuestionnaire() {
   const [step, setStep] = useState(0);
@@ -35,6 +70,7 @@ export function SwitchQuestionnaire() {
   const [priorities, setPriorities] = useState<Priority[]>(["easy", "stability"]);
   const [softwareIds, setSoftwareIds] = useState<string[]>([]);
   const [blockingIds, setBlockingIds] = useState<string[]>([]);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
 
   const answers: QuestionnaireAnswers = useMemo(
     () => ({
@@ -47,6 +83,10 @@ export function SwitchQuestionnaire() {
   );
 
   const result = useMemo(() => recommend(answers), [answers]);
+  const geminiPrompt = useMemo(() => {
+    if (result.outcome !== "recommend") return "";
+    return buildGeminiPrompt(answers, distroLabel(result.distroId));
+  }, [answers, result]);
 
   function toggleSoftware(id: string, on: boolean) {
     setSoftwareIds((prev) =>
@@ -73,6 +113,13 @@ export function SwitchQuestionnaire() {
   }
 
   const pct = Math.round(((step + 1) / STEPS) * 100);
+
+  async function onCopyPrompt() {
+    if (!geminiPrompt || !navigator?.clipboard) return;
+    await navigator.clipboard.writeText(geminiPrompt);
+    setCopiedPrompt(true);
+    window.setTimeout(() => setCopiedPrompt(false), 1800);
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -307,6 +354,29 @@ export function SwitchQuestionnaire() {
                     <li key={b}>{b}</li>
                   ))}
                 </ul>
+                <div className="space-y-3 rounded-lg border border-emerald-400/30 bg-black/20 p-3">
+                  <p className="flex items-center gap-2 text-sm font-medium text-emerald-100">
+                    <Sparkles className="h-4 w-4" />
+                    Use Gemini for a tailored install guide
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Copy the prompt below, paste it into Gemini, and ask
+                    follow-up questions during your install.
+                  </p>
+                  <textarea
+                    readOnly
+                    value={geminiPrompt}
+                    className="border-border/70 bg-background/70 min-h-56 w-full rounded-md border p-2 font-mono text-xs leading-relaxed"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void onCopyPrompt()}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    {copiedPrompt ? "Copied" : "Copy Gemini prompt"}
+                  </Button>
+                </div>
               </div>
             )}
             <p className="text-muted-foreground text-xs">
