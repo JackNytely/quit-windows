@@ -1,0 +1,12 @@
+node_modules
+.next
+.turbo
+dist
+*.log
+.env
+.env.local
+.DS_Store
+tools/st.tar.gz
+
+# Machine-specific SpacetimeDB overlay (from `spacetime init`); do not commit.
+apps/web/spacetime.local.json

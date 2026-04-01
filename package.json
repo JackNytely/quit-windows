@@ -1,0 +1,21 @@
+{
+  "name": "quitwindows",
+  "private": true,
+  "workspaces": ["apps/web", "apps/web/spacetimedb"],
+  "scripts": {
+    "dev": "turbo dev",
+    "start": "turbo run start --filter=web",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "spacetime:build": "cd apps/web && spacetime build",
+    "spacetime:generate": "cd apps/web && spacetime generate --lang typescript -y -o ./src/lib/module_bindings",
+    "spacetime:publish": "cd apps/web && spacetime publish quit-windows --server maincloud -y",
+    "spacetime:login": "spacetime login",
+    "spacetime:dev": "cd apps/web && spacetime dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.8"
+  },
+  "packageManager": "bun@1.3.11"
+}

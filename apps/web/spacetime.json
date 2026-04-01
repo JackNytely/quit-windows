@@ -1,0 +1,7 @@
+{
+  "database": "quit-windows",
+  "server": "maincloud",
+  "dev": {
+    "run": "bun run dev"
+  }
+}
